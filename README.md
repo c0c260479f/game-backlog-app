@@ -90,6 +90,10 @@ GitHub上にpushすると、`.github/workflows/tests.yml`によりpush・プル�
 ruff check .
 ```
 
+## 依存パッケージの更新
+
+`.github/dependabot.yml`により、pip・GitHub Actionsの依存パッケージ更新を週次で自動チェックし、更新があればプルリクエストを作成する(GitHub上にpushしている場合のみ動作)。
+
 ## フォルダ構成
 
 ```
