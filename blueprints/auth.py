@@ -6,6 +6,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 import db
 from auth import User
+from extensions import limiter
 
 bp = Blueprint("auth", __name__)
 
@@ -13,6 +14,7 @@ USERNAME_RE = re.compile(r"^[A-Za-z0-9_-]{3,20}$")
 
 
 @bp.route("/register", methods=["GET", "POST"])
+@limiter.limit("20 per hour", methods=["POST"])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("games.game_list"))
@@ -65,6 +67,7 @@ def register():
 
 
 @bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute", methods=["POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("games.game_list"))

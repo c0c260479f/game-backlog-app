@@ -12,6 +12,7 @@ from blueprints.auth import bp as auth_bp
 from blueprints.games import bp as games_bp
 from blueprints.sharing import bp as sharing_bp
 from blueprints.social import bp as social_bp
+from extensions import limiter
 
 load_dotenv()
 
@@ -24,6 +25,7 @@ def create_app(test_config=None):
     db.init_app(app)
     auth.init_app(app)
     CSRFProtect(app)
+    limiter.init_app(app)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(games_bp)

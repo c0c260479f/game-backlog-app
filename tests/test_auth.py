@@ -104,3 +104,22 @@ def test_logout_then_protected_route_redirects(client):
     r = client.get("/games", follow_redirects=False)
     assert r.status_code == 302
     assert "/login" in r.headers["Location"]
+
+
+def test_login_is_rate_limited_after_repeated_attempts(client):
+    register(client, "erin")
+    fresh = client.application.test_client()
+
+    statuses = []
+    for _ in range(11):
+        html = fresh.get("/login").get_data(as_text=True)
+        token = get_csrf_token(html)
+        r = fresh.post(
+            "/login",
+            data={"username": "erin", "password": "wrongpass", "csrf_token": token},
+        )
+        statuses.append(r.status_code)
+
+    # 「10 per minute」の設定なので、11回目は429で弾かれるはず
+    assert statuses[:10] == [200] * 10
+    assert statuses[10] == 429

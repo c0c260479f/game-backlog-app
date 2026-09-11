@@ -7,6 +7,7 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import app as app_module
+from extensions import limiter
 
 
 @pytest.fixture
@@ -21,6 +22,10 @@ def app():
             "WTF_CSRF_ENABLED": True,
         }
     )
+
+    # limiterは全アプリインスタンスで共有されるモジュール単位のシングルトンなので、
+    # 前のテストで消費した回数がここに残らないようテストごとにリセットする
+    limiter.reset()
 
     yield flask_app
 
