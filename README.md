@@ -40,17 +40,16 @@ pip install -r requirements-dev.txt
 
 ### 環境変数(`.env`)
 
-プロジェクト直下に `.env` ファイルを作成する(`.gitignore`済みなのでコミットされない)。
+`.env.example` をコピーして値を埋める(`.env` は `.gitignore`済みなのでコミットされない)。
 
+```bash
+cp .env.example .env
 ```
-# 省略可: 設定するとタイトル自動補完・カバー画像取得が有効になる
-# https://rawg.io/apidocs で無料アカウント登録して取得
-RAWG_API_KEY=your-rawg-api-key
 
-# 省略可: 設定しない場合は開発用の固定キーが使われる(個人利用ならそれで十分)
-# セッションの署名に使うランダムな文字列。生成例: python -c "import secrets; print(secrets.token_hex(32))"
-SECRET_KEY=your-random-secret-key
-```
+| 変数 | 必須 | 内容 |
+|---|---|---|
+| `RAWG_API_KEY` | 省略可 | 設定するとタイトル自動補完・カバー画像取得が有効になる。[rawg.io/apidocs](https://rawg.io/apidocs) で無料アカウント登録して取得 |
+| `SECRET_KEY` | 省略可 | セッションの署名に使うランダムな文字列。未設定だと開発用の固定キーが使われる(個人利用のローカル環境ならそれで十分)。生成例: `python -c "import secrets; print(secrets.token_hex(32))"` |
 
 ### データベースの初期化
 
