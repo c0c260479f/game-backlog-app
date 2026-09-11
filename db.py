@@ -4,14 +4,14 @@ from pathlib import Path
 import click
 from flask import current_app, g
 
-DB_PATH = Path(__file__).parent / "games.db"
+DEFAULT_DB_PATH = Path(__file__).parent / "games.db"
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 
 
 def get_db():
-    """リクエストごとに1つのDB接続を使い回す"""
+    """リクエストごとに1つのDB接続を使い回す(接続先はapp.config["DATABASE"])"""
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
+        g.db = sqlite3.connect(current_app.config["DATABASE"])
         g.db.row_factory = sqlite3.Row
         g.db.execute("PRAGMA foreign_keys = ON")
     return g.db
@@ -53,6 +53,24 @@ def ensure_play_sessions_table():
     conn.execute(
         "CREATE INDEX IF NOT EXISTS idx_play_sessions_game_id ON play_sessions (game_id)"
     )
+    conn.commit()
+
+
+def ensure_games_table():
+    """gamesテーブルがなければ追加する(既存データは消さない)。真っ新なDBファイル向けの土台"""
+    conn = get_db()
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS games (
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               title TEXT NOT NULL,
+               status TEXT NOT NULL CHECK (status IN ('backlog', 'playing', 'completed')),
+               rating INTEGER CHECK (rating IS NULL OR (rating >= 1 AND rating <= 5)),
+               memo TEXT,
+               created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+               updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+           )"""
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_games_status ON games (status)")
     conn.commit()
 
 
@@ -240,12 +258,14 @@ def ensure_notifications_table():
 
 
 def init_app(app):
+    app.config.setdefault("DATABASE", str(DEFAULT_DB_PATH))
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
     with app.app_context():
+        ensure_users_table()
+        ensure_games_table()
         ensure_play_sessions_table()
         ensure_cover_url_column()
-        ensure_users_table()
         ensure_user_id_column()
         ensure_share_token_column()
         ensure_is_public_column()
