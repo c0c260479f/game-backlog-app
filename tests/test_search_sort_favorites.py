@@ -1,6 +1,6 @@
 import re
 
-from helpers import add_game, get_csrf_token, post_with_token, register
+from helpers import add_game, post_with_token, register
 
 
 def _game_ids_in_order(html):
@@ -81,7 +81,6 @@ def test_favorite_toggle_and_filter(client):
     assert "Stray" not in fav_only
 
     # トグルで解除
-    html3 = client.get("/games").get_data(as_text=True)
     post_with_token(
         client,
         "/games",

@@ -1,6 +1,6 @@
 import re
 
-from helpers import add_game, get_csrf_token, register
+from helpers import add_game, register
 
 
 def _first_game_id(html):

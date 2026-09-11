@@ -1,6 +1,7 @@
+from helpers import register
+
 import core
 from blueprints import games as games_bp
-from helpers import register
 
 
 def test_search_returns_empty_without_api_key(client, monkeypatch):

@@ -80,7 +80,15 @@ pytest
 
 `pytest`を実行すると自動的にカバレッジレポート(`--cov --cov-report=term-missing`、`pyproject.toml`で設定)も表示される。現状は94%前後。
 
-GitHub上にpushすると、`.github/workflows/tests.yml`によりpush・プルリクエストのたびに自動でこのテストが実行される(GitHub Actions)。
+GitHub上にpushすると、`.github/workflows/tests.yml`によりpush・プルリクエストのたびに自動でこのテスト(lint含む)が実行される(GitHub Actions)。
+
+## Lint
+
+[ruff](https://docs.astral.sh/ruff/)でコードチェックをしている(設定は`pyproject.toml`)。
+
+```bash
+ruff check .
+```
 
 ## フォルダ構成
 

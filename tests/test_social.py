@@ -1,7 +1,6 @@
 import re
-import sqlite3
 
-from helpers import add_game, edit_game, get_csrf_token, post_with_token, register
+from helpers import add_game, edit_game, get_csrf_token, register
 
 
 def _first_game_id(html):
