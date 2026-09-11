@@ -1,0 +1,9 @@
+[tool.pytest.ini_options]
+addopts = "--cov --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["app", "auth", "core", "db", "blueprints"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false

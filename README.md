@@ -79,6 +79,8 @@ pytest
 
 テストは一時ファイルに作った専用のDBを使うため、`games.db`(実データ)には一切触れない。
 
+`pytest`を実行すると自動的にカバレッジレポート(`--cov --cov-report=term-missing`、`pyproject.toml`で設定)も表示される。現状は94%前後。
+
 ## フォルダ構成
 
 ```
