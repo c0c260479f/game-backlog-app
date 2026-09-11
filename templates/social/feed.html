@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}フィード - ゲームバックログ{% endblock %}
+
+{% block content %}
+  <h1>フィード</h1>
+
+  {% if activities|length == 0 %}
+    <p class="empty">まだ何も流れてないよ。「みんなを探す」から誰かをフォローしてみて。</p>
+  {% else %}
+    <ul class="feed-list">
+      {% for a in activities %}
+        <li class="feed-card">
+          <div class="feed-card-body">
+            {% if a['actor_avatar_url'] %}
+              <img class="avatar avatar-sm" src="{{ a['actor_avatar_url'] }}" alt="">
+            {% else %}
+              <div class="avatar avatar-sm avatar-placeholder">🎮</div>
+            {% endif %}
+            {% if a['game_cover_url'] %}
+              <img class="feed-cover" src="{{ a['game_cover_url'] }}" alt="">
+            {% endif %}
+            <div>
+              <p class="feed-text">
+                <strong>{{ a['actor_username'] }}</strong> が
+                <strong>{{ a['game_title'] }}</strong>{{ ACTIVITY_KIND_LABELS[a['kind']] }}
+                {% if a['kind'] == 'rated' and a['rating'] %}
+                  <span class="rating">{{ '★' * a['rating'] }}{{ '☆' * (5 - a['rating']) }}</span>
+                {% endif %}
+              </p>
+              <p class="feed-time">{{ a['created_at'] }}</p>
+            </div>
+          </div>
+
+          <div class="feed-actions">
+            <form method="post" action="{{ url_for('activity_like_toggle', activity_id=a['id']) }}" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn {{ 'btn-primary' if a['liked_by_me'] }}">
+                👍 いいね {{ a['like_count'] }}
+              </button>
+            </form>
+          </div>
+
+          {% set comments = comments_by_activity.get(a['id'], []) %}
+          {% if comments %}
+            <ul class="comment-list">
+              {% for c in comments %}
+                <li class="comment-row">
+                  <span><strong>{{ c['username'] }}</strong> {{ c['body'] }}</span>
+                  {% if c['user_id'] == current_user.id|int %}
+                    <form method="post"
+                          action="{{ url_for('activity_comment_delete', activity_id=a['id'], comment_id=c['id']) }}"
+                          class="inline-form">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="link-danger">削除</button>
+                    </form>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          <form method="post" action="{{ url_for('activity_comment_add', activity_id=a['id']) }}" class="comment-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="text" name="body" maxlength="500" placeholder="コメントする">
+            <button type="submit" class="btn">送信</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

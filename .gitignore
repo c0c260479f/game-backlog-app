@@ -1,0 +1,11 @@
+# 個人のゲーム記録データ(コミットしない)
+games.db
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# 環境固有
+.env

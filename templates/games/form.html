@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ 'ゲームを追加' if mode == 'new' else 'ゲームを編集' }} - ゲームバックログ{% endblock %}
+
+{% block content %}
+  <h1>{{ 'ゲームを追加' if mode == 'new' else 'ゲームを編集' }}</h1>
+
+  <form method="post" class="game-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="cover_url" id="cover_url" value="{{ game['cover_url'] if game['cover_url'] is defined and game['cover_url'] else '' }}">
+
+    <label>
+      タイトル
+      <div class="autocomplete">
+        <input type="text" name="title" id="title" autocomplete="off"
+               value="{{ game['title'] if game['title'] is defined else '' }}" required autofocus>
+        <ul id="title-suggestions" class="suggestions" hidden></ul>
+      </div>
+    </label>
+
+    <img id="cover-preview" class="cover-preview"
+         src="{{ game['cover_url'] if game['cover_url'] is defined and game['cover_url'] else '' }}"
+         {% if not (game['cover_url'] is defined and game['cover_url']) %}hidden{% endif %} alt="">
+
+    <label>
+      ステータス
+      <select name="status" required>
+        {% for key, label in STATUS_LABELS.items() %}
+          <option value="{{ key }}" {{ 'selected' if (game['status'] if game['status'] is defined else 'backlog') == key }}>
+            {{ label }}
+          </option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>
+      評価(1〜5、任意)
+      <input type="number" name="rating" min="1" max="5" value="{{ game['rating'] if game['rating'] is defined and game['rating'] else '' }}">
+    </label>
+
+    <label>
+      メモ(任意)
+      <textarea name="memo" rows="4">{{ game['memo'] if game['memo'] is defined and game['memo'] else '' }}</textarea>
+    </label>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">保存</button>
+      <a href="{{ url_for('game_list') }}" class="btn">キャンセル</a>
+    </div>
+  </form>
+
+  <script>
+    (function () {
+      const titleInput = document.getElementById("title");
+      const suggestionsEl = document.getElementById("title-suggestions");
+      const coverUrlInput = document.getElementById("cover_url");
+      const coverPreview = document.getElementById("cover-preview");
+      let debounceTimer = null;
+      let currentController = null;
+
+      function hideSuggestions() {
+        suggestionsEl.hidden = true;
+        suggestionsEl.innerHTML = "";
+      }
+
+      function selectSuggestion(name, coverUrl) {
+        titleInput.value = name;
+        coverUrlInput.value = coverUrl || "";
+        if (coverUrl) {
+          coverPreview.src = coverUrl;
+          coverPreview.hidden = false;
+        } else {
+          coverPreview.hidden = true;
+        }
+        hideSuggestions();
+      }
+
+      function renderSuggestions(items) {
+        suggestionsEl.innerHTML = "";
+        if (!items.length) {
+          hideSuggestions();
+          return;
+        }
+        items.forEach(function (item) {
+          const li = document.createElement("li");
+          li.textContent = item.name;
+          li.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            selectSuggestion(item.name, item.cover_url);
+          });
+          suggestionsEl.appendChild(li);
+        });
+        suggestionsEl.hidden = false;
+      }
+
+      titleInput.addEventListener("input", function () {
+        const query = titleInput.value.trim();
+        // タイトルを手動で編集したら、選択済みのカバー画像との紐付けを解除する
+        coverUrlInput.value = "";
+        coverPreview.hidden = true;
+
+        clearTimeout(debounceTimer);
+        if (query.length < 2) {
+          hideSuggestions();
+          return;
+        }
+        debounceTimer = setTimeout(function () {
+          if (currentController) currentController.abort();
+          currentController = new AbortController();
+          fetch("/api/games/search?q=" + encodeURIComponent(query), { signal: currentController.signal })
+            .then(function (res) { return res.ok ? res.json() : []; })
+            .then(renderSuggestions)
+            .catch(function () {});
+        }, 300);
+      });
+
+      titleInput.addEventListener("blur", function () {
+        setTimeout(hideSuggestions, 100);
+      });
+    })();
+  </script>
+{% endblock %}

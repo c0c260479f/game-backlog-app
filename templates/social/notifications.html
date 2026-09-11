@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}通知 - ゲームバックログ{% endblock %}
+
+{% block content %}
+  <h1>通知</h1>
+
+  {% if notifications|length == 0 %}
+    <p class="empty">まだ通知がないよ。</p>
+  {% else %}
+    <ul class="notification-list">
+      {% for n in notifications %}
+        <li class="notification-row {{ 'unread' if not n['is_read'] }}">
+          {% if n['actor_avatar_url'] %}
+            <img class="avatar avatar-sm" src="{{ n['actor_avatar_url'] }}" alt="">
+          {% else %}
+            <div class="avatar avatar-sm avatar-placeholder">🎮</div>
+          {% endif %}
+          <div class="notification-text">
+            {% if n['kind'] == 'follow' %}
+              <a href="{{ url_for('user_profile', username=n['actor_username']) }}"><strong>{{ n['actor_username'] }}</strong></a> さんにフォローされたよ
+            {% elif n['kind'] == 'like' %}
+              <a href="{{ url_for('user_profile', username=n['actor_username']) }}"><strong>{{ n['actor_username'] }}</strong></a> さんが「{{ n['game_title'] }}」への投稿にいいねしたよ
+            {% elif n['kind'] == 'comment' %}
+              <a href="{{ url_for('user_profile', username=n['actor_username']) }}"><strong>{{ n['actor_username'] }}</strong></a> さんが「{{ n['game_title'] }}」への投稿にコメントしたよ
+            {% endif %}
+            <p class="feed-time">{{ n['created_at'] }}</p>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}設定 - ゲームバックログ{% endblock %}
+
+{% block content %}
+  <h1>設定</h1>
+
+  <section class="settings-section">
+    <h2>アイコン</h2>
+    <p class="settings-desc">画像URLを直接指定するか、お気に入りに登録したゲームのカバー画像をアイコンにできるよ。</p>
+
+    <div class="avatar-current">
+      {% if avatar_url %}
+        <img class="avatar avatar-lg" src="{{ avatar_url }}" alt="">
+      {% else %}
+        <div class="avatar avatar-lg avatar-placeholder">🎮</div>
+      {% endif %}
+    </div>
+
+    <form method="post" action="{{ url_for('profile_avatar_update') }}" class="inline-form avatar-url-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="text" name="avatar_url" placeholder="https://example.com/icon.png">
+      <button type="submit" class="btn">URLで設定</button>
+    </form>
+
+    {% if favorite_games|length > 0 %}
+      <form method="post" action="{{ url_for('profile_avatar_update') }}" class="inline-form avatar-favorite-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <select name="game_id">
+          {% for g in favorite_games %}
+            <option value="{{ g['id'] }}">{{ g['title'] }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn">お気に入りの画像にする</button>
+      </form>
+    {% else %}
+      <p class="settings-desc">お気に入りゲームにカバー画像を設定すると、ここから選べるようになるよ。</p>
+    {% endif %}
+
+    {% if avatar_url %}
+      <form method="post" action="{{ url_for('profile_avatar_clear') }}" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="link-danger">アイコンを削除</button>
+      </form>
+    {% endif %}
+  </section>
+
+  <section class="settings-section">
+    <h2>コレクションの共有</h2>
+    <p class="settings-desc">誰でも(ログイン不要)閲覧できる読み取り専用のURLを発行できるよ。メモは含まれない。</p>
+    {% if share_url %}
+      <p>🔗 共有中: <a href="{{ share_url }}" target="_blank" rel="noopener">{{ share_url }}</a></p>
+      <div class="share-box-actions">
+        <form method="post" action="{{ url_for('share_generate') }}" class="inline-form"
+              onsubmit="return confirm('URLを再発行すると、今のURLは使えなくなるよ。よい?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn">URLを再発行</button>
+        </form>
+        <form method="post" action="{{ url_for('share_disable') }}" class="inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="link-danger">共有を停止</button>
+        </form>
+      </div>
+    {% else %}
+      <form method="post" action="{{ url_for('share_generate') }}" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn">🔗 コレクションを共有する</button>
+      </form>
+    {% endif %}
+  </section>
+
+  <section class="settings-section">
+    <h2>公開プロフィール</h2>
+    <p class="settings-desc">オンにすると、他の登録ユーザーがあなたをユーザー名で見つけてフォローできるようになるよ。</p>
+    {% if profile_url %}
+      <p>🌐 公開中: <a href="{{ profile_url }}" target="_blank" rel="noopener">{{ profile_url }}</a></p>
+      <form method="post" action="{{ url_for('profile_disable') }}" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="link-danger">公開プロフィールを停止</button>
+      </form>
+    {% else %}
+      <form method="post" action="{{ url_for('profile_enable') }}" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn">🌐 公開プロフィールを有効にする</button>
+      </form>
+    {% endif %}
+  </section>
+
+  <section class="settings-section">
+    <h2>ブロック中のユーザー</h2>
+    {% if blocked_users|length == 0 %}
+      <p class="settings-desc">ブロックしているユーザーはいないよ。</p>
+    {% else %}
+      <ul class="user-list">
+        {% for u in blocked_users %}
+          <li class="user-row">
+            <span>{{ u['username'] }}</span>
+            <form method="post" action="{{ url_for('user_unblock', username=u['username']) }}" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn">ブロック解除</button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+{% endblock %}

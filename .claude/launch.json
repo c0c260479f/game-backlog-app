@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "game-backlog-flask",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "flask", "--app", "app", "run", "--debug", "--port", "5050"],
+      "port": 5050
+    }
+  ]
+}

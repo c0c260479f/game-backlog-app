@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ owner['username'] }} のコレクション - ゲームバックログ{% endblock %}
+
+{% block content %}
+  <p class="share-banner">🔗 {{ owner['username'] }} さんの公開コレクション(閲覧専用)</p>
+
+  <nav class="tabs">
+    <a class="tab {{ 'active' if status_filter == 'all' }}" href="{{ url_for('public_list', token=token, q=search_query, sort=sort_key) }}">
+      すべて ({{ total }})
+    </a>
+    {% for key, label in STATUS_LABELS.items() %}
+      <a class="tab {{ 'active' if status_filter == key }}" href="{{ url_for('public_list', token=token, status=key, q=search_query, sort=sort_key) }}">
+        {{ label }} ({{ counts.get(key, 0) }})
+      </a>
+    {% endfor %}
+  </nav>
+
+  <form method="get" class="search-bar">
+    {% if status_filter != 'all' %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+    <input type="search" name="q" value="{{ search_query }}" placeholder="タイトルで検索">
+    <select name="sort">
+      {% for key, opt in sort_options.items() %}
+        <option value="{{ key }}" {{ 'selected' if sort_key == key }}>{{ opt[0] }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn">検索</button>
+  </form>
+
+  {% if games|length == 0 %}
+    {% if search_query %}
+      <p class="empty">「{{ search_query }}」に一致するゲームは見つからなかったよ。</p>
+    {% else %}
+      <p class="empty">まだ公開されているゲームがないよ。</p>
+    {% endif %}
+  {% else %}
+    <ul class="game-grid">
+      {% for game in games %}
+        <li class="game-card status-{{ game['status'] }}">
+          {% if game['cover_url'] %}
+            <img class="game-cover" src="{{ game['cover_url'] }}" alt="">
+          {% endif %}
+          <div class="game-card-head">
+            <span class="badge">{{ STATUS_LABELS[game['status']] }}</span>
+            {% if game['rating'] %}
+              <span class="rating">{{ '★' * game['rating'] }}{{ '☆' * (5 - game['rating']) }}</span>
+            {% endif %}
+          </div>
+          <h2 class="game-title">
+            {% if game['is_favorite'] %}<span class="favorite-star" title="お気に入り">★</span>{% endif %}
+            {{ game['title'] }}
+          </h2>
+          {% if game['total_minutes'] %}
+            <p class="game-playtime">🕒 {{ format_minutes(game['total_minutes']) }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

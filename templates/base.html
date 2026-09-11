@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ゲームバックログ{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('game_list') }}">🎮 ゲームバックログ</a>
+    {% if current_user.is_authenticated %}
+      <nav class="topbar-nav">
+        <a href="{{ url_for('game_list') }}">一覧</a>
+        <a href="{{ url_for('feed') }}">フィード</a>
+        <a href="{{ url_for('user_directory') }}">みんなを探す</a>
+        <a href="{{ url_for('notifications') }}" class="notification-bell">
+          🔔{% if unread_notification_count %}<span class="notification-badge">{{ unread_notification_count }}</span>{% endif %}
+        </a>
+      </nav>
+      <div class="topbar-right">
+        <a href="{{ url_for('user_profile', username=current_user.username) }}" class="current-user">
+          {% if current_user.avatar_url %}
+            <img class="avatar avatar-sm" src="{{ current_user.avatar_url }}" alt="">
+          {% else %}
+            <div class="avatar avatar-sm avatar-placeholder">🎮</div>
+          {% endif %}
+          {{ current_user.username }}
+        </a>
+        <a class="btn" href="{{ url_for('settings') }}">設定</a>
+        <a class="btn btn-primary" href="{{ url_for('game_new') }}">+ 追加</a>
+        <form method="post" action="{{ url_for('logout') }}" class="inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn">ログアウト</button>
+        </form>
+      </div>
+    {% endif %}
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

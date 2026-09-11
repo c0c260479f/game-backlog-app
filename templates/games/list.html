@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}一覧 - ゲームバックログ{% endblock %}
+
+{% block content %}
+  <nav class="tabs">
+    <a class="tab {{ 'active' if status_filter == 'all' }}" href="{{ url_for('game_list', q=search_query, sort=sort_key, favorite=1 if favorite_only else none) }}">
+      すべて ({{ total }})
+    </a>
+    {% for key, label in STATUS_LABELS.items() %}
+      <a class="tab {{ 'active' if status_filter == key }}" href="{{ url_for('game_list', status=key, q=search_query, sort=sort_key, favorite=1 if favorite_only else none) }}">
+        {{ label }} ({{ counts.get(key, 0) }})
+      </a>
+    {% endfor %}
+    <a class="tab favorite-tab {{ 'active' if favorite_only }}"
+       href="{{ url_for('game_list', status=status_filter if status_filter != 'all' else none, q=search_query, sort=sort_key, favorite=none if favorite_only else 1) }}">
+      ★ お気に入り
+    </a>
+  </nav>
+
+  <form method="get" class="search-bar">
+    {% if status_filter != 'all' %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+    {% if favorite_only %}<input type="hidden" name="favorite" value="1">{% endif %}
+    <input type="search" name="q" value="{{ search_query }}" placeholder="タイトルで検索">
+    <select name="sort">
+      {% for key, opt in sort_options.items() %}
+        <option value="{{ key }}" {{ 'selected' if sort_key == key }}>{{ opt[0] }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn">検索</button>
+    {% if search_query %}
+      <a class="btn" href="{{ url_for('game_list', status=status_filter if status_filter != 'all' else none, sort=sort_key, favorite=1 if favorite_only else none) }}">クリア</a>
+    {% endif %}
+  </form>
+
+  {% if games|length == 0 %}
+    {% if search_query %}
+      <p class="empty">「{{ search_query }}」に一致するゲームは見つからなかったよ。</p>
+    {% elif favorite_only %}
+      <p class="empty">お気に入りに登録したゲームがまだないよ。</p>
+    {% else %}
+      <p class="empty">まだゲームが登録されてないよ。右上の「+ 追加」から登録してみて。</p>
+    {% endif %}
+  {% else %}
+    <ul class="game-grid">
+      {% for game in games %}
+        <li class="game-card status-{{ game['status'] }}">
+          {% if game['cover_url'] %}
+            <img class="game-cover" src="{{ game['cover_url'] }}" alt="">
+          {% endif %}
+          <div class="game-card-head">
+            <span class="badge">{{ STATUS_LABELS[game['status']] }}</span>
+            {% if game['rating'] %}
+              <span class="rating">{{ '★' * game['rating'] }}{{ '☆' * (5 - game['rating']) }}</span>
+            {% endif %}
+          </div>
+          <h2 class="game-title">
+            {% if game['is_favorite'] %}<span class="favorite-star" title="お気に入り">★</span>{% endif %}
+            {{ game['title'] }}
+          </h2>
+          {% if game['memo'] %}
+            <p class="game-memo">{{ game['memo'] }}</p>
+          {% endif %}
+          {% if game['total_minutes'] %}
+            <p class="game-playtime">🕒 {{ format_minutes(game['total_minutes']) }}</p>
+          {% endif %}
+          <div class="game-actions">
+            <a href="{{ url_for('game_edit', game_id=game['id']) }}">編集</a>
+            <a href="{{ url_for('session_list', game_id=game['id']) }}">プレイ記録</a>
+            <form method="post" action="{{ url_for('game_favorite_toggle', game_id=game['id']) }}" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="status" value="{{ status_filter if status_filter != 'all' else '' }}">
+              <input type="hidden" name="q" value="{{ search_query }}">
+              <input type="hidden" name="sort" value="{{ sort_key }}">
+              <input type="hidden" name="favorite" value="{{ '1' if favorite_only else '' }}">
+              <button type="submit" class="link-plain">
+                {{ 'お気に入り解除' if game['is_favorite'] else 'お気に入り' }}
+              </button>
+            </form>
+            <form method="post" action="{{ url_for('game_delete', game_id=game['id']) }}"
+                  onsubmit="return confirm('「{{ game['title'] }}」を削除する?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="link-danger">削除</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

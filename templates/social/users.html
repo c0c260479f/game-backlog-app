@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}みんなを探す - ゲームバックログ{% endblock %}
+
+{% block content %}
+  <h1>みんなを探す</h1>
+
+  <form method="get" class="search-bar">
+    <input type="search" name="q" value="{{ search_query }}" placeholder="ユーザー名で検索">
+    <select name="sort">
+      {% for key, opt in sort_options.items() %}
+        <option value="{{ key }}" {{ 'selected' if sort_key == key }}>{{ opt[0] }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn">検索</button>
+  </form>
+
+  {% if users|length == 0 %}
+    <p class="empty">
+      {% if search_query %}「{{ search_query }}」に一致するユーザーは見つからなかったよ。
+      {% else %}公開プロフィールのユーザーがまだいないよ。{% endif %}
+    </p>
+  {% else %}
+    <ul class="user-list">
+      {% for u in users %}
+        <li class="user-row">
+          {% if u['avatar_url'] %}
+            <img class="avatar avatar-sm" src="{{ u['avatar_url'] }}" alt="">
+          {% else %}
+            <div class="avatar avatar-sm avatar-placeholder">🎮</div>
+          {% endif %}
+          <a href="{{ url_for('user_profile', username=u['username']) }}">{{ u['username'] }}</a>
+          <span class="badge">フォロワー {{ u['follower_count'] }}</span>
+          {% if u['id'] in following_ids %}
+            <span class="badge">フォロー中</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}
