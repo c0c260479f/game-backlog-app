@@ -309,13 +309,21 @@ def user_unfollow(username):
     return redirect(url_for("social.user_profile", username=username))
 
 
+PAGE_SIZE = 50
+
+
 @bp.route("/feed")
 @login_required
 def feed():
     conn = db.get_db()
     user_id = int(current_user.id)
+
+    before_id = request.args.get("before_id", type=int)
+    cursor_condition = "AND a.id < ?" if before_id else ""
+    cursor_params = [before_id] if before_id else []
+
     activities = conn.execute(
-        """SELECT a.*, g.title AS game_title, g.cover_url AS game_cover_url,
+        f"""SELECT a.*, g.title AS game_title, g.cover_url AS game_cover_url,
                   u.username AS actor_username, u.avatar_url AS actor_avatar_url,
                   (SELECT COUNT(*) FROM activity_likes al WHERE al.activity_id = a.id) AS like_count,
                   EXISTS(
@@ -325,12 +333,17 @@ def feed():
            FROM activities a
            JOIN games g ON g.id = a.game_id
            JOIN users u ON u.id = a.user_id
-           WHERE a.user_id = ?
-              OR a.user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?)
+           WHERE (a.user_id = ?
+              OR a.user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?))
+              {cursor_condition}
            ORDER BY a.created_at DESC, a.id DESC
-           LIMIT 50""",
-        (user_id, user_id, user_id),
+           LIMIT {PAGE_SIZE + 1}""",
+        [user_id, user_id, user_id, *cursor_params],
     ).fetchall()
+
+    has_more = len(activities) > PAGE_SIZE
+    activities = activities[:PAGE_SIZE]
+    next_before_id = activities[-1]["id"] if has_more else None
 
     activity_ids = [a["id"] for a in activities]
     comments_by_activity = {}
@@ -350,6 +363,7 @@ def feed():
         "social/feed.html",
         activities=activities,
         comments_by_activity=comments_by_activity,
+        next_before_id=next_before_id,
     )
 
 
@@ -424,21 +438,34 @@ def activity_comment_delete(activity_id, comment_id):
 def notifications():
     conn = db.get_db()
     user_id = int(current_user.id)
+
+    before_id = request.args.get("before_id", type=int)
+    cursor_condition = "AND n.id < ?" if before_id else ""
+    cursor_params = [before_id] if before_id else []
+
     rows = conn.execute(
-        """SELECT n.*, u.username AS actor_username, u.avatar_url AS actor_avatar_url,
+        f"""SELECT n.*, u.username AS actor_username, u.avatar_url AS actor_avatar_url,
                   g.title AS game_title
            FROM notifications n
            JOIN users u ON u.id = n.actor_id
            LEFT JOIN activities a ON a.id = n.activity_id
            LEFT JOIN games g ON g.id = a.game_id
            WHERE n.user_id = ?
+              {cursor_condition}
            ORDER BY n.created_at DESC, n.id DESC
-           LIMIT 50""",
-        (user_id,),
+           LIMIT {PAGE_SIZE + 1}""",
+        [user_id, *cursor_params],
     ).fetchall()
+
+    has_more = len(rows) > PAGE_SIZE
+    rows = rows[:PAGE_SIZE]
+    next_before_id = rows[-1]["id"] if has_more else None
+
     conn.execute(
         "UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0",
         (user_id,),
     )
     conn.commit()
-    return render_template("social/notifications.html", notifications=rows)
+    return render_template(
+        "social/notifications.html", notifications=rows, next_before_id=next_before_id
+    )

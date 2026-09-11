@@ -128,3 +128,38 @@ def test_like_and_comment_visible_only_to_followers(client):
         data={"body": "nice!", "csrf_token": get_csrf_token(feed_html2)},
     )
     assert "nice!" in bob.get("/feed").get_data(as_text=True)
+
+
+def test_feed_paginates_past_page_size(client, app):
+    register(client, "alice")
+    _enable_public_profile(client)
+    bob = client.application.test_client()
+    register(bob, "bob")
+    html = bob.get("/users/alice").get_data(as_text=True)
+    bob.post("/users/alice/follow", data={"csrf_token": get_csrf_token(html)})
+
+    with app.app_context():
+        import db
+
+        conn = db.get_db()
+        cur = conn.execute(
+            "INSERT INTO games (title, status, user_id) VALUES ('Filler', 'backlog', "
+            "(SELECT id FROM users WHERE username='alice'))"
+        )
+        game_id = cur.lastrowid
+        for i in range(55):
+            conn.execute(
+                "INSERT INTO activities (user_id, game_id, kind) VALUES "
+                "((SELECT id FROM users WHERE username='alice'), ?, 'added')",
+                (game_id,),
+            )
+        conn.commit()
+
+    page1 = bob.get("/feed").get_data(as_text=True)
+    assert "もっと見る" in page1
+    m = re.search(r"before_id=(\d+)", page1)
+    assert m is not None
+
+    page2 = bob.get(f"/feed?before_id={m.group(1)}").get_data(as_text=True)
+    assert page2.count('class="feed-card"') == 5  # 55件中、1ページ目50件・2ページ目5件
+    assert "もっと見る" not in page2

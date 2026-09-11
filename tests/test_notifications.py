@@ -76,3 +76,30 @@ def test_self_actions_do_not_notify(client, app):
         conn = db.get_db()
         count = conn.execute("SELECT COUNT(*) AS c FROM notifications").fetchone()["c"]
     assert count == 0
+
+
+def test_notifications_paginate_past_page_size(client, app):
+    register(client, "alice")
+    bob = client.application.test_client()
+    register(bob, "bob")
+
+    with app.app_context():
+        import db
+
+        conn = db.get_db()
+        for _ in range(55):
+            conn.execute(
+                "INSERT INTO notifications (user_id, actor_id, kind) VALUES "
+                "((SELECT id FROM users WHERE username='alice'), "
+                "(SELECT id FROM users WHERE username='bob'), 'follow')"
+            )
+        conn.commit()
+
+    page1 = client.get("/notifications").get_data(as_text=True)
+    assert "もっと見る" in page1
+    match = re.search(r"before_id=(\d+)", page1)
+    assert match is not None
+
+    page2 = client.get(f"/notifications?before_id={match.group(1)}").get_data(as_text=True)
+    assert page2.count('class="notification-row') == 5
+    assert "もっと見る" not in page2

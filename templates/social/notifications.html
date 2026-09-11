@@ -28,5 +28,10 @@
         </li>
       {% endfor %}
     </ul>
+    {% if next_before_id %}
+      <p class="load-more">
+        <a class="btn" href="{{ url_for('social.notifications', before_id=next_before_id) }}">もっと見る</a>
+      </p>
+    {% endif %}
   {% endif %}
 {% endblock %}
