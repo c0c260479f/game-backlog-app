@@ -2,7 +2,7 @@
 {% block title %}{{ game['title'] }} のプレイ記録 - ゲームバックログ{% endblock %}
 
 {% block content %}
-  <p><a href="{{ url_for('game_list') }}">← 一覧へ戻る</a></p>
+  <p><a href="{{ url_for('games.game_list') }}">← 一覧へ戻る</a></p>
   <h1>{{ game['title'] }}</h1>
   <p class="total-playtime">
     合計プレイ時間: {{ format_minutes(total_minutes) or '記録なし' }}
@@ -34,7 +34,7 @@
           <span class="session-date">{{ session['played_on'] }}</span>
           <span class="session-duration">{{ format_minutes(session['minutes']) }}</span>
           <form method="post"
-                action="{{ url_for('session_delete', game_id=game['id'], session_id=session['id']) }}"
+                action="{{ url_for('games.session_delete', game_id=game['id'], session_id=session['id']) }}"
                 onsubmit="return confirm('この記録を削除する?');">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="link-danger">削除</button>

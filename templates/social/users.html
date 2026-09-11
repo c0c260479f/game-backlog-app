@@ -28,7 +28,7 @@
           {% else %}
             <div class="avatar avatar-sm avatar-placeholder">🎮</div>
           {% endif %}
-          <a href="{{ url_for('user_profile', username=u['username']) }}">{{ u['username'] }}</a>
+          <a href="{{ url_for('social.user_profile', username=u['username']) }}">{{ u['username'] }}</a>
           <span class="badge">フォロワー {{ u['follower_count'] }}</span>
           {% if u['id'] in following_ids %}
             <span class="badge">フォロー中</span>

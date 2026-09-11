@@ -3,16 +3,16 @@
 
 {% block content %}
   <nav class="tabs">
-    <a class="tab {{ 'active' if status_filter == 'all' }}" href="{{ url_for('game_list', q=search_query, sort=sort_key, favorite=1 if favorite_only else none) }}">
+    <a class="tab {{ 'active' if status_filter == 'all' }}" href="{{ url_for('games.game_list', q=search_query, sort=sort_key, favorite=1 if favorite_only else none) }}">
       すべて ({{ total }})
     </a>
     {% for key, label in STATUS_LABELS.items() %}
-      <a class="tab {{ 'active' if status_filter == key }}" href="{{ url_for('game_list', status=key, q=search_query, sort=sort_key, favorite=1 if favorite_only else none) }}">
+      <a class="tab {{ 'active' if status_filter == key }}" href="{{ url_for('games.game_list', status=key, q=search_query, sort=sort_key, favorite=1 if favorite_only else none) }}">
         {{ label }} ({{ counts.get(key, 0) }})
       </a>
     {% endfor %}
     <a class="tab favorite-tab {{ 'active' if favorite_only }}"
-       href="{{ url_for('game_list', status=status_filter if status_filter != 'all' else none, q=search_query, sort=sort_key, favorite=none if favorite_only else 1) }}">
+       href="{{ url_for('games.game_list', status=status_filter if status_filter != 'all' else none, q=search_query, sort=sort_key, favorite=none if favorite_only else 1) }}">
       ★ お気に入り
     </a>
   </nav>
@@ -28,7 +28,7 @@
     </select>
     <button type="submit" class="btn">検索</button>
     {% if search_query %}
-      <a class="btn" href="{{ url_for('game_list', status=status_filter if status_filter != 'all' else none, sort=sort_key, favorite=1 if favorite_only else none) }}">クリア</a>
+      <a class="btn" href="{{ url_for('games.game_list', status=status_filter if status_filter != 'all' else none, sort=sort_key, favorite=1 if favorite_only else none) }}">クリア</a>
     {% endif %}
   </form>
 
@@ -64,9 +64,9 @@
             <p class="game-playtime">🕒 {{ format_minutes(game['total_minutes']) }}</p>
           {% endif %}
           <div class="game-actions">
-            <a href="{{ url_for('game_edit', game_id=game['id']) }}">編集</a>
-            <a href="{{ url_for('session_list', game_id=game['id']) }}">プレイ記録</a>
-            <form method="post" action="{{ url_for('game_favorite_toggle', game_id=game['id']) }}" class="inline-form">
+            <a href="{{ url_for('games.game_edit', game_id=game['id']) }}">編集</a>
+            <a href="{{ url_for('games.session_list', game_id=game['id']) }}">プレイ記録</a>
+            <form method="post" action="{{ url_for('games.game_favorite_toggle', game_id=game['id']) }}" class="inline-form">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="status" value="{{ status_filter if status_filter != 'all' else '' }}">
               <input type="hidden" name="q" value="{{ search_query }}">
@@ -76,7 +76,7 @@
                 {{ 'お気に入り解除' if game['is_favorite'] else 'お気に入り' }}
               </button>
             </form>
-            <form method="post" action="{{ url_for('game_delete', game_id=game['id']) }}"
+            <form method="post" action="{{ url_for('games.game_delete', game_id=game['id']) }}"
                   onsubmit="return confirm('「{{ game['title'] }}」を削除する?');">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="link-danger">削除</button>

@@ -4,7 +4,7 @@
 {% block content %}
   <h1>{{ profile_user['username'] }}</h1>
   <p class="empty">このプロフィールは非公開だよ。</p>
-  <form method="post" action="{{ url_for('user_block', username=profile_user['username']) }}" class="inline-form"
+  <form method="post" action="{{ url_for('social.user_block', username=profile_user['username']) }}" class="inline-form"
         onsubmit="return confirm('{{ profile_user['username'] }}さんをブロックする?');">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="link-danger">ブロック</button>

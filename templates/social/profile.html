@@ -17,17 +17,17 @@
     {% if not is_own_profile %}
       <div class="profile-actions">
         {% if is_following %}
-          <form method="post" action="{{ url_for('user_unfollow', username=profile_user['username']) }}" class="inline-form">
+          <form method="post" action="{{ url_for('social.user_unfollow', username=profile_user['username']) }}" class="inline-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn">フォロー中</button>
           </form>
         {% else %}
-          <form method="post" action="{{ url_for('user_follow', username=profile_user['username']) }}" class="inline-form">
+          <form method="post" action="{{ url_for('social.user_follow', username=profile_user['username']) }}" class="inline-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-primary">フォローする</button>
           </form>
         {% endif %}
-        <form method="post" action="{{ url_for('user_block', username=profile_user['username']) }}" class="inline-form"
+        <form method="post" action="{{ url_for('social.user_block', username=profile_user['username']) }}" class="inline-form"
               onsubmit="return confirm('{{ profile_user['username'] }}さんをブロックする?お互いフォローできなくなるよ。');">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="link-danger">ブロック</button>
@@ -37,11 +37,11 @@
   </div>
 
   <nav class="tabs">
-    <a class="tab {{ 'active' if status_filter == 'all' }}" href="{{ url_for('user_profile', username=profile_user['username'], q=search_query, sort=sort_key) }}">
+    <a class="tab {{ 'active' if status_filter == 'all' }}" href="{{ url_for('social.user_profile', username=profile_user['username'], q=search_query, sort=sort_key) }}">
       すべて ({{ total }})
     </a>
     {% for key, label in STATUS_LABELS.items() %}
-      <a class="tab {{ 'active' if status_filter == key }}" href="{{ url_for('user_profile', username=profile_user['username'], status=key, q=search_query, sort=sort_key) }}">
+      <a class="tab {{ 'active' if status_filter == key }}" href="{{ url_for('social.user_profile', username=profile_user['username'], status=key, q=search_query, sort=sort_key) }}">
         {{ label }} ({{ counts.get(key, 0) }})
       </a>
     {% endfor %}

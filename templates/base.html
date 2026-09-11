@@ -8,18 +8,18 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="{{ url_for('game_list') }}">🎮 ゲームバックログ</a>
+    <a class="brand" href="{{ url_for('games.game_list') }}">🎮 ゲームバックログ</a>
     {% if current_user.is_authenticated %}
       <nav class="topbar-nav">
-        <a href="{{ url_for('game_list') }}">一覧</a>
-        <a href="{{ url_for('feed') }}">フィード</a>
-        <a href="{{ url_for('user_directory') }}">みんなを探す</a>
-        <a href="{{ url_for('notifications') }}" class="notification-bell">
+        <a href="{{ url_for('games.game_list') }}">一覧</a>
+        <a href="{{ url_for('social.feed') }}">フィード</a>
+        <a href="{{ url_for('social.user_directory') }}">みんなを探す</a>
+        <a href="{{ url_for('social.notifications') }}" class="notification-bell">
           🔔{% if unread_notification_count %}<span class="notification-badge">{{ unread_notification_count }}</span>{% endif %}
         </a>
       </nav>
       <div class="topbar-right">
-        <a href="{{ url_for('user_profile', username=current_user.username) }}" class="current-user">
+        <a href="{{ url_for('social.user_profile', username=current_user.username) }}" class="current-user">
           {% if current_user.avatar_url %}
             <img class="avatar avatar-sm" src="{{ current_user.avatar_url }}" alt="">
           {% else %}
@@ -27,9 +27,9 @@
           {% endif %}
           {{ current_user.username }}
         </a>
-        <a class="btn" href="{{ url_for('settings') }}">設定</a>
-        <a class="btn btn-primary" href="{{ url_for('game_new') }}">+ 追加</a>
-        <form method="post" action="{{ url_for('logout') }}" class="inline-form">
+        <a class="btn" href="{{ url_for('social.settings') }}">設定</a>
+        <a class="btn btn-primary" href="{{ url_for('games.game_new') }}">+ 追加</a>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="inline-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn">ログアウト</button>
         </form>

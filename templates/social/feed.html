@@ -32,7 +32,7 @@
           </div>
 
           <div class="feed-actions">
-            <form method="post" action="{{ url_for('activity_like_toggle', activity_id=a['id']) }}" class="inline-form">
+            <form method="post" action="{{ url_for('social.activity_like_toggle', activity_id=a['id']) }}" class="inline-form">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn {{ 'btn-primary' if a['liked_by_me'] }}">
                 👍 いいね {{ a['like_count'] }}
@@ -48,7 +48,7 @@
                   <span><strong>{{ c['username'] }}</strong> {{ c['body'] }}</span>
                   {% if c['user_id'] == current_user.id|int %}
                     <form method="post"
-                          action="{{ url_for('activity_comment_delete', activity_id=a['id'], comment_id=c['id']) }}"
+                          action="{{ url_for('social.activity_comment_delete', activity_id=a['id'], comment_id=c['id']) }}"
                           class="inline-form">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       <button type="submit" class="link-danger">削除</button>
@@ -59,7 +59,7 @@
             </ul>
           {% endif %}
 
-          <form method="post" action="{{ url_for('activity_comment_add', activity_id=a['id']) }}" class="comment-form">
+          <form method="post" action="{{ url_for('social.activity_comment_add', activity_id=a['id']) }}" class="comment-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="text" name="body" maxlength="500" placeholder="コメントする">
             <button type="submit" class="btn">送信</button>

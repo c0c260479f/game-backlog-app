@@ -16,14 +16,14 @@
       {% endif %}
     </div>
 
-    <form method="post" action="{{ url_for('profile_avatar_update') }}" class="inline-form avatar-url-form">
+    <form method="post" action="{{ url_for('social.profile_avatar_update') }}" class="inline-form avatar-url-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="text" name="avatar_url" placeholder="https://example.com/icon.png">
       <button type="submit" class="btn">URLで設定</button>
     </form>
 
     {% if favorite_games|length > 0 %}
-      <form method="post" action="{{ url_for('profile_avatar_update') }}" class="inline-form avatar-favorite-form">
+      <form method="post" action="{{ url_for('social.profile_avatar_update') }}" class="inline-form avatar-favorite-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <select name="game_id">
           {% for g in favorite_games %}
@@ -37,7 +37,7 @@
     {% endif %}
 
     {% if avatar_url %}
-      <form method="post" action="{{ url_for('profile_avatar_clear') }}" class="inline-form">
+      <form method="post" action="{{ url_for('social.profile_avatar_clear') }}" class="inline-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="link-danger">アイコンを削除</button>
       </form>
@@ -50,18 +50,18 @@
     {% if share_url %}
       <p>🔗 共有中: <a href="{{ share_url }}" target="_blank" rel="noopener">{{ share_url }}</a></p>
       <div class="share-box-actions">
-        <form method="post" action="{{ url_for('share_generate') }}" class="inline-form"
+        <form method="post" action="{{ url_for('sharing.share_generate') }}" class="inline-form"
               onsubmit="return confirm('URLを再発行すると、今のURLは使えなくなるよ。よい?');">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn">URLを再発行</button>
         </form>
-        <form method="post" action="{{ url_for('share_disable') }}" class="inline-form">
+        <form method="post" action="{{ url_for('sharing.share_disable') }}" class="inline-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="link-danger">共有を停止</button>
         </form>
       </div>
     {% else %}
-      <form method="post" action="{{ url_for('share_generate') }}" class="inline-form">
+      <form method="post" action="{{ url_for('sharing.share_generate') }}" class="inline-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn">🔗 コレクションを共有する</button>
       </form>
@@ -73,12 +73,12 @@
     <p class="settings-desc">オンにすると、他の登録ユーザーがあなたをユーザー名で見つけてフォローできるようになるよ。</p>
     {% if profile_url %}
       <p>🌐 公開中: <a href="{{ profile_url }}" target="_blank" rel="noopener">{{ profile_url }}</a></p>
-      <form method="post" action="{{ url_for('profile_disable') }}" class="inline-form">
+      <form method="post" action="{{ url_for('social.profile_disable') }}" class="inline-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="link-danger">公開プロフィールを停止</button>
       </form>
     {% else %}
-      <form method="post" action="{{ url_for('profile_enable') }}" class="inline-form">
+      <form method="post" action="{{ url_for('social.profile_enable') }}" class="inline-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn">🌐 公開プロフィールを有効にする</button>
       </form>
@@ -94,7 +94,7 @@
         {% for u in blocked_users %}
           <li class="user-row">
             <span>{{ u['username'] }}</span>
-            <form method="post" action="{{ url_for('user_unblock', username=u['username']) }}" class="inline-form">
+            <form method="post" action="{{ url_for('social.user_unblock', username=u['username']) }}" class="inline-form">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn">ブロック解除</button>
             </form>

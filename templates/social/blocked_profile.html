@@ -5,7 +5,7 @@
   <h1>{{ profile_user['username'] }}</h1>
   <p class="empty">このプロフィールは表示できないよ。</p>
   {% if blocked_by_me %}
-    <form method="post" action="{{ url_for('user_unblock', username=profile_user['username']) }}" class="inline-form">
+    <form method="post" action="{{ url_for('social.user_unblock', username=profile_user['username']) }}" class="inline-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn">ブロックを解除する</button>
     </form>

@@ -17,11 +17,11 @@
           {% endif %}
           <div class="notification-text">
             {% if n['kind'] == 'follow' %}
-              <a href="{{ url_for('user_profile', username=n['actor_username']) }}"><strong>{{ n['actor_username'] }}</strong></a> さんにフォローされたよ
+              <a href="{{ url_for('social.user_profile', username=n['actor_username']) }}"><strong>{{ n['actor_username'] }}</strong></a> さんにフォローされたよ
             {% elif n['kind'] == 'like' %}
-              <a href="{{ url_for('user_profile', username=n['actor_username']) }}"><strong>{{ n['actor_username'] }}</strong></a> さんが「{{ n['game_title'] }}」への投稿にいいねしたよ
+              <a href="{{ url_for('social.user_profile', username=n['actor_username']) }}"><strong>{{ n['actor_username'] }}</strong></a> さんが「{{ n['game_title'] }}」への投稿にいいねしたよ
             {% elif n['kind'] == 'comment' %}
-              <a href="{{ url_for('user_profile', username=n['actor_username']) }}"><strong>{{ n['actor_username'] }}</strong></a> さんが「{{ n['game_title'] }}」への投稿にコメントしたよ
+              <a href="{{ url_for('social.user_profile', username=n['actor_username']) }}"><strong>{{ n['actor_username'] }}</strong></a> さんが「{{ n['game_title'] }}」への投稿にコメントしたよ
             {% endif %}
             <p class="feed-time">{{ n['created_at'] }}</p>
           </div>

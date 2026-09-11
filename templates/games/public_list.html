@@ -5,11 +5,11 @@
   <p class="share-banner">🔗 {{ owner['username'] }} さんの公開コレクション(閲覧専用)</p>
 
   <nav class="tabs">
-    <a class="tab {{ 'active' if status_filter == 'all' }}" href="{{ url_for('public_list', token=token, q=search_query, sort=sort_key) }}">
+    <a class="tab {{ 'active' if status_filter == 'all' }}" href="{{ url_for('sharing.public_list', token=token, q=search_query, sort=sort_key) }}">
       すべて ({{ total }})
     </a>
     {% for key, label in STATUS_LABELS.items() %}
-      <a class="tab {{ 'active' if status_filter == key }}" href="{{ url_for('public_list', token=token, status=key, q=search_query, sort=sort_key) }}">
+      <a class="tab {{ 'active' if status_filter == key }}" href="{{ url_for('sharing.public_list', token=token, status=key, q=search_query, sort=sort_key) }}">
         {{ label }} ({{ counts.get(key, 0) }})
       </a>
     {% endfor %}

@@ -1,9 +1,10 @@
-import app as app_module
+import core
+from blueprints import games as games_bp
 from helpers import register
 
 
 def test_search_returns_empty_without_api_key(client, monkeypatch):
-    monkeypatch.setattr(app_module, "RAWG_API_KEY", None)
+    monkeypatch.setattr(core, "RAWG_API_KEY", None)
     register(client, "alice")
     r = client.get("/api/games/search?q=zelda")
     assert r.status_code == 200
@@ -11,7 +12,7 @@ def test_search_returns_empty_without_api_key(client, monkeypatch):
 
 
 def test_search_returns_empty_for_short_query(client, monkeypatch):
-    monkeypatch.setattr(app_module, "RAWG_API_KEY", "dummy-key")
+    monkeypatch.setattr(core, "RAWG_API_KEY", "dummy-key")
     register(client, "alice")
     r = client.get("/api/games/search?q=a")
     assert r.get_json() == []
@@ -24,7 +25,7 @@ def test_search_requires_login(client):
 
 
 def test_search_parses_rawg_response_and_filters_blank_names(client, monkeypatch):
-    monkeypatch.setattr(app_module, "RAWG_API_KEY", "dummy-key")
+    monkeypatch.setattr(core, "RAWG_API_KEY", "dummy-key")
     register(client, "alice")
 
     class FakeResponse:
@@ -46,7 +47,7 @@ def test_search_parses_rawg_response_and_filters_blank_names(client, monkeypatch
         captured["params"] = params
         return FakeResponse()
 
-    monkeypatch.setattr(app_module.requests, "get", fake_get)
+    monkeypatch.setattr(games_bp.requests, "get", fake_get)
 
     r = client.get("/api/games/search?q=elden ring")
     data = r.get_json()
@@ -58,13 +59,13 @@ def test_search_parses_rawg_response_and_filters_blank_names(client, monkeypatch
 
 
 def test_search_swallows_network_errors(client, monkeypatch):
-    monkeypatch.setattr(app_module, "RAWG_API_KEY", "dummy-key")
+    monkeypatch.setattr(core, "RAWG_API_KEY", "dummy-key")
     register(client, "alice")
 
     def raising_get(url, params=None, timeout=None):
-        raise app_module.requests.RequestException("network down")
+        raise games_bp.requests.RequestException("network down")
 
-    monkeypatch.setattr(app_module.requests, "get", raising_get)
+    monkeypatch.setattr(games_bp.requests, "get", raising_get)
 
     r = client.get("/api/games/search?q=elden ring")
     assert r.status_code == 200
