@@ -65,6 +65,22 @@ def test_create_game_rejects_bad_cover_url_scheme(client):
     assert "カバー画像のURLが不正だよ" in r.get_data(as_text=True)
 
 
+def test_create_game_rejects_memo_over_max_length(client):
+    register(client, "alice")
+    html = client.get("/games/new").get_data(as_text=True)
+    token = get_csrf_token(html)
+    r = client.post(
+        "/games/new",
+        data={
+            "title": "X",
+            "status": "backlog",
+            "memo": "a" * 2001,
+            "csrf_token": token,
+        },
+    )
+    assert "メモは2000文字以内にしてね" in r.get_data(as_text=True)
+
+
 def test_create_and_list_game(client):
     register(client, "alice")
     r = add_game(client, "Elden Ring", status="playing", rating="5")

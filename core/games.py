@@ -7,7 +7,7 @@ from flask_login import current_user
 
 import db
 
-from .constants import SORT_OPTIONS, VALID_STATUSES
+from .constants import MEMO_MAX_LENGTH, SORT_OPTIONS, VALID_STATUSES
 from .social import log_activity
 
 
@@ -62,6 +62,8 @@ def save_game(is_new, game_id=None):
         return "タイトルは必須だよ。"
     if status not in VALID_STATUSES:
         return "ステータスの値が不正だよ。"
+    if len(memo) > MEMO_MAX_LENGTH:
+        return f"メモは{MEMO_MAX_LENGTH}文字以内にしてね。"
 
     rating = None
     if rating_raw:

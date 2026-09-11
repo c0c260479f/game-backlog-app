@@ -39,7 +39,7 @@
 
     <label>
       メモ(任意)
-      <textarea name="memo" rows="4">{{ game['memo'] if game['memo'] is defined and game['memo'] else '' }}</textarea>
+      <textarea name="memo" rows="4" maxlength="2000">{{ game['memo'] if game['memo'] is defined and game['memo'] else '' }}</textarea>
     </label>
 
     <div class="form-actions">

@@ -34,6 +34,8 @@ DIRECTORY_SORT_OPTIONS = {
 }
 DEFAULT_DIRECTORY_SORT = "new"
 
+MEMO_MAX_LENGTH = 2000
+
 
 def format_minutes(total_minutes):
     """分数を「12時間30分」のような表示用文字列に変換する"""
