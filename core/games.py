@@ -1,56 +1,14 @@
-"""複数のBlueprintで共有する定数とヘルパー関数。"""
+"""ゲーム本体・プレイセッションに関するDBアクセスヘルパー。"""
 
 import datetime
-import os
 
 from flask import request
 from flask_login import current_user
 
 import db
 
-RAWG_API_KEY = os.environ.get("RAWG_API_KEY")
-RAWG_SEARCH_URL = "https://api.rawg.io/api/games"
-
-STATUS_LABELS = {
-    "backlog": "積みゲー",
-    "playing": "プレイ中",
-    "completed": "クリア済み",
-}
-VALID_STATUSES = set(STATUS_LABELS.keys())
-
-SORT_OPTIONS = {
-    "updated_desc": ("更新日が新しい順", "g.updated_at DESC, g.id DESC"),
-    "created_desc": ("登録日が新しい順", "g.created_at DESC, g.id DESC"),
-    "rating_desc": ("評価が高い順", "g.rating IS NULL, g.rating DESC, g.id DESC"),
-    "title_asc": ("タイトル順", "g.title COLLATE NOCASE ASC, g.id ASC"),
-    "playtime_desc": ("プレイ時間が長い順", "total_minutes DESC, g.id DESC"),
-}
-DEFAULT_SORT = "updated_desc"
-
-ACTIVITY_KIND_LABELS = {
-    "added": "を積みゲーに追加したよ",
-    "completed": "をクリアしたよ",
-    "rated": "を評価したよ",
-}
-
-DIRECTORY_SORT_OPTIONS = {
-    "new": ("新着順", "u.created_at DESC, u.id DESC"),
-    "popular": ("人気順", "follower_count DESC, u.id DESC"),
-    "name": ("名前順", "u.username COLLATE NOCASE ASC"),
-}
-DEFAULT_DIRECTORY_SORT = "new"
-
-
-def format_minutes(total_minutes):
-    """分数を「12時間30分」のような表示用文字列に変換する"""
-    if not total_minutes:
-        return None
-    hours, minutes = divmod(total_minutes, 60)
-    if hours and minutes:
-        return f"{hours}時間{minutes}分"
-    if hours:
-        return f"{hours}時間"
-    return f"{minutes}分"
+from .constants import SORT_OPTIONS, VALID_STATUSES
+from .social import log_activity
 
 
 def fetch_games(user_id, status_filter, search_query, sort_key, favorite_only=False):
@@ -182,46 +140,3 @@ def save_session(game_id):
     )
     conn.commit()
     return None
-
-
-def log_activity(user_id, game_id, kind, rating=None):
-    conn = db.get_db()
-    conn.execute(
-        "INSERT INTO activities (user_id, game_id, kind, rating) VALUES (?, ?, ?, ?)",
-        (user_id, game_id, kind, rating),
-    )
-    conn.commit()
-
-
-def activity_visible(conn, activity_id, viewer_id):
-    """そのアクティビティが閲覧者のフィードに表示される対象か(自分のか、フォロー中のユーザーのものか)"""
-    row = conn.execute(
-        """SELECT 1 FROM activities a
-           WHERE a.id = ? AND (
-               a.user_id = ? OR a.user_id IN (SELECT followee_id FROM follows WHERE follower_id = ?)
-           )""",
-        (activity_id, viewer_id, viewer_id),
-    ).fetchone()
-    return row is not None
-
-
-def is_blocked(conn, user_a, user_b):
-    """user_aとuser_bのどちらかがもう片方をブロックしているか"""
-    row = conn.execute(
-        """SELECT 1 FROM blocks
-           WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)""",
-        (user_a, user_b, user_b, user_a),
-    ).fetchone()
-    return row is not None
-
-
-def notify(recipient_id, actor_id, kind, activity_id=None):
-    """自分自身の行動には通知を出さない"""
-    if recipient_id == actor_id:
-        return
-    conn = db.get_db()
-    conn.execute(
-        "INSERT INTO notifications (user_id, actor_id, kind, activity_id) VALUES (?, ?, ?, ?)",
-        (recipient_id, actor_id, kind, activity_id),
-    )
-    conn.commit()

@@ -84,7 +84,10 @@ pytest
 ```
 game-backlog-app/
 ├── app.py                  # アプリケーションファクトリ(Blueprint登録のみ)
-├── core.py                 # Blueprint間で共有する定数・DBアクセスヘルパー
+├── core/                   # Blueprint間で共有する定数・DBアクセスヘルパー
+│   ├── constants.py          # 表示ラベル・並び替え条件・RAWG設定
+│   ├── games.py              # ゲーム一覧取得・保存ロジック
+│   └── social.py             # アクティビティ・通知・ブロックのロジック
 ├── auth.py                 # Flask-LoginのUserモデル・ログインマネージャー設定
 ├── db.py                   # DB接続・非破壊マイグレーション
 ├── schema.sql              # テーブル定義(flask init-db用)
