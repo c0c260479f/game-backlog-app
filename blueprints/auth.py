@@ -99,3 +99,53 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for("auth.login"))
+
+
+@bp.route("/settings/password", methods=["POST"])
+@login_required
+@limiter.limit("10 per hour")
+def change_password():
+    current_password = request.form.get("current_password", "")
+    new_password = request.form.get("new_password", "")
+    new_password_confirm = request.form.get("new_password_confirm", "")
+
+    conn = db.get_db()
+    row = conn.execute(
+        "SELECT password_hash FROM users WHERE id = ?", (int(current_user.id),)
+    ).fetchone()
+
+    if not check_password_hash(row["password_hash"], current_password):
+        flash("現在のパスワードが違うよ。")
+    elif len(new_password) < 8:
+        flash("新しいパスワードは8文字以上にしてね。")
+    elif new_password != new_password_confirm:
+        flash("新しいパスワードが一致しないよ。")
+    else:
+        conn.execute(
+            "UPDATE users SET password_hash = ? WHERE id = ?",
+            (generate_password_hash(new_password), int(current_user.id)),
+        )
+        conn.commit()
+        flash("パスワードを変更したよ。")
+
+    return redirect(url_for("social.settings"))
+
+
+@bp.route("/settings/delete-account", methods=["POST"])
+@login_required
+def delete_account():
+    password = request.form.get("password", "")
+    conn = db.get_db()
+    row = conn.execute(
+        "SELECT password_hash FROM users WHERE id = ?", (int(current_user.id),)
+    ).fetchone()
+
+    if not check_password_hash(row["password_hash"], password):
+        flash("パスワードが違うよ。アカウントは削除されなかったよ。")
+        return redirect(url_for("social.settings"))
+
+    conn.execute("DELETE FROM users WHERE id = ?", (int(current_user.id),))
+    conn.commit()
+    logout_user()
+    flash("アカウントを削除したよ。今までありがとう。")
+    return redirect(url_for("auth.login"))

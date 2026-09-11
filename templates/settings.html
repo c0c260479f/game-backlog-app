@@ -109,4 +109,42 @@
     <p class="settings-desc">自分のゲームリストをCSVファイルでダウンロードできるよ(バックアップ用途にも)。</p>
     <a class="btn" href="{{ url_for('games.export_games_csv') }}">CSVでダウンロード</a>
   </section>
+
+  <section class="settings-section">
+    <h2>パスワードの変更</h2>
+    <form method="post" action="{{ url_for('auth.change_password') }}" class="game-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>
+        現在のパスワード
+        <input type="password" name="current_password" required>
+      </label>
+      <label>
+        新しいパスワード(8文字以上)
+        <input type="password" name="new_password" minlength="8" required>
+      </label>
+      <label>
+        新しいパスワード(確認)
+        <input type="password" name="new_password_confirm" minlength="8" required>
+      </label>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">パスワードを変更する</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="settings-section">
+    <h2>アカウントの削除</h2>
+    <p class="settings-desc">アカウントを削除すると、登録した全てのゲーム・プレイ記録・フォロー関係などが完全に消え、元に戻せないよ。</p>
+    <form method="post" action="{{ url_for('auth.delete_account') }}" class="game-form"
+          onsubmit="return confirm('本当にアカウントを削除する?この操作は元に戻せないよ。');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>
+        確認のためパスワードを入力してね
+        <input type="password" name="password" required>
+      </label>
+      <div class="form-actions">
+        <button type="submit" class="link-danger">アカウントを削除する</button>
+      </div>
+    </form>
+  </section>
 {% endblock %}
