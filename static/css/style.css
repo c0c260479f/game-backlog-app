@@ -26,12 +26,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 10px;
   padding: 16px 24px;
   background: var(--card);
   border-bottom: 1px solid var(--border);
 }
 
 .brand {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--ink);
@@ -41,7 +45,8 @@ body {
 .topbar-nav {
   display: flex;
   align-items: center;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 8px 16px;
   font-size: 0.9rem;
 }
 
@@ -57,7 +62,8 @@ body {
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 8px 12px;
 }
 
 .current-user {
