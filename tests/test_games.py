@@ -131,3 +131,30 @@ def test_edit_and_delete_require_ownership(client):
     # alice's game must still exist
     html_alice = client.get("/games").get_data(as_text=True)
     assert "Alices Secret Game" in html_alice
+
+
+def test_export_csv_contains_own_games_only(client):
+    register(client, "alice")
+    add_game(client, "Elden Ring", status="playing", rating="5", memo="great game")
+
+    bob = client.application.test_client()
+    register(bob, "bob")
+    add_game(bob, "Bob's Game")
+
+    r = client.get("/export/games.csv")
+    assert r.status_code == 200
+    assert r.mimetype == "text/csv"
+    assert "attachment" in r.headers["Content-Disposition"]
+
+    body = r.get_data(as_text=True)
+    assert body.startswith("﻿title,status,rating,memo")
+    assert "Elden Ring" in body
+    assert "プレイ中" in body
+    assert "great game" in body
+    assert "Bob's Game" not in body
+
+
+def test_export_csv_requires_login(client):
+    r = client.get("/export/games.csv", follow_redirects=False)
+    assert r.status_code == 302
+    assert "/login" in r.headers["Location"]

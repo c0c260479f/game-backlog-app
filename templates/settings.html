@@ -103,4 +103,10 @@
       </ul>
     {% endif %}
   </section>
+
+  <section class="settings-section">
+    <h2>データのエクスポート</h2>
+    <p class="settings-desc">自分のゲームリストをCSVファイルでダウンロードできるよ(バックアップ用途にも)。</p>
+    <a class="btn" href="{{ url_for('games.export_games_csv') }}">CSVでダウンロード</a>
+  </section>
 {% endblock %}

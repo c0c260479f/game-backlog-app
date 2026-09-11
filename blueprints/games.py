@@ -1,8 +1,11 @@
+import csv
 import datetime
+import io
 
 import requests
 from flask import (
     Blueprint,
+    Response,
     abort,
     flash,
     jsonify,
@@ -191,3 +194,58 @@ def session_delete(game_id, session_id):
     )
     conn.commit()
     return redirect(url_for("games.session_list", game_id=game_id))
+
+
+@bp.route("/export/games.csv")
+@login_required
+def export_games_csv():
+    conn = db.get_db()
+    rows = conn.execute(
+        """SELECT g.title, g.status, g.rating, g.memo, g.cover_url, g.is_favorite,
+                  g.created_at, g.updated_at, COALESCE(SUM(ps.minutes), 0) AS total_minutes
+           FROM games g
+           LEFT JOIN play_sessions ps ON ps.game_id = g.id
+           WHERE g.user_id = ?
+           GROUP BY g.id
+           ORDER BY g.title COLLATE NOCASE ASC""",
+        (int(current_user.id),),
+    ).fetchall()
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(
+        [
+            "title",
+            "status",
+            "rating",
+            "memo",
+            "cover_url",
+            "is_favorite",
+            "created_at",
+            "updated_at",
+            "total_minutes",
+        ]
+    )
+    for row in rows:
+        writer.writerow(
+            [
+                row["title"],
+                core.STATUS_LABELS.get(row["status"], row["status"]),
+                row["rating"] or "",
+                row["memo"] or "",
+                row["cover_url"] or "",
+                "yes" if row["is_favorite"] else "no",
+                row["created_at"],
+                row["updated_at"],
+                row["total_minutes"],
+            ]
+        )
+
+    # Excelで開いたときに文字化けしないよう、UTF-8のBOMを先頭に付ける
+    csv_text = "﻿" + buffer.getvalue()
+
+    return Response(
+        csv_text,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=games.csv"},
+    )
