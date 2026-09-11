@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, render_template, url_for
 from flask_login import current_user
 from flask_wtf import CSRFProtect
 
@@ -51,6 +51,29 @@ def create_app(test_config=None):
     @app.route("/")
     def index():
         return redirect(url_for("games.game_list"))
+
+    @app.errorhandler(400)
+    def bad_request(e):
+        return render_template("errors/400.html"), 400
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(429)
+    def rate_limited(e):
+        return render_template("errors/429.html"), 429
+
+    @app.errorhandler(500)
+    def server_error(e):
+        return render_template("errors/500.html"), 500
+
+    @app.after_request
+    def set_security_headers(response):
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "same-origin"
+        return response
 
     return app
 

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}見つからないよ - ゲームバックログ{% endblock %}
+
+{% block content %}
+  <h1>404 - ページが見つからないよ</h1>
+  <p class="empty">お探しのページは存在しないか、削除された可能性があるよ。</p>
+  <p><a href="{{ url_for('games.game_list') }}">一覧に戻る</a></p>
+{% endblock %}
